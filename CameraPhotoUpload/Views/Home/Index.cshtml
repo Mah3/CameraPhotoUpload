@@ -1,0 +1,104 @@
+﻿@{
+    ViewBag.Title = "FileUpload";
+}
+
+<link href="~/Content/style.css" rel="stylesheet" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+<script src="http://malsup.github.com/jquery.form.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.22/webcam.min.js"></script>
+
+<h2>FileUpload</h2>
+
+@using (Html.BeginForm("Index", "Home"))
+{
+    @Html.AntiForgeryToken()
+
+    <div id="myCamera"></div>
+    <input id="webcamData" type="hidden" name="webcamData" value="" />
+
+    <input type=button value="Start Camera" onClick="startCamera()">
+    <input type=button value="Capture Photo" onClick="capturePhoto()">
+
+    <input type=button value="Upload Photo" onClick="uploadPhoto()">
+
+    <input type="submit" value="Submit">
+}
+
+<div class="progress progress-striped">
+    <div class="progress-bar progress-bar-success">0%</div>
+</div>
+
+<script language="JavaScript">
+
+    var photoData;
+    
+    Webcam.set({
+        width: 320,
+        height: 240,
+        image_format: 'jpeg',
+        upload_name: 'webcamPhoto',  
+        jpeg_quality: 90
+    });
+
+    function startCamera() {
+        Webcam.attach('#myCamera');
+    }
+
+    function capturePhoto() {
+        // take snapshot and get image data
+        Webcam.snap(function (data_uri) {
+            photoData = data_uri;
+            // display results in page
+            document.getElementById('myCamera').innerHTML =               
+                '<img src="' + data_uri + '"/>';
+
+            var raw_image_data = data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
+
+            document.getElementById('webcamData').value = raw_image_data;
+ 
+
+
+        });
+    }
+
+
+    function uploadPhoto() {
+        var uploadUrl = '@Url.Action("UploadPhoto")';
+        Webcam.upload(photoData, uploadUrl, function (code, text) {
+            alert(code + "\r\n" + text);
+        });
+    }
+
+
+
+
+    (function () {
+
+        var bar = $('.progress-bar');
+        var percent = $('.progress-bar');
+        var status = $('#status');
+
+        $('form').ajaxForm({
+            beforeSend: function () {
+                status.empty();
+                var percentVal = '0%';
+                bar.width(percentVal)
+                percent.html(percentVal);
+            },
+            uploadProgress: function (event, position, total, percentComplete) {
+                var percentVal = percentComplete + '%';
+                bar.width(percentVal)
+                percent.html(percentVal);
+            },
+            success: function () {
+                var percentVal = '100%';
+                bar.width(percentVal)
+                percent.html(percentVal);
+            },
+            complete: function (xhr) {
+                status.html(xhr.responseText);
+            }
+        });
+
+    })();
+</script>
