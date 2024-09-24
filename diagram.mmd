@@ -1,26 +1,29 @@
 sequenceDiagram
-
-    Actor u as User
+    participant User
     participant CampaignService
     participant ContactService
     participant BackgroundJobService
     participant SMSService
-    participant Credit
+    participant CreditService
 
-    u ->> CampaignService: Create SMS Campaign (details, group of contacts)
-    CampaignServsaice->>ContactService: Fetch contacts by group
+    User->>CampaignService: Create SMS Campaign (details, group of contacts)
+    CampaignService->>ContactService: Fetch contacts by group
     ContactService-->>CampaignService: Return list of contacts
+
+    CampaignService->>CreditService: Deduct total SMS count from user credit
+    CreditService-->>CampaignService: Confirm deduction
 
     CampaignService->>BackgroundJobService: Schedule background job to send SMS
     BackgroundJobService-->>CampaignService: Background job scheduled
 
-    CampaignService-->>u: Campaign created, SMS sending in progress (async)
+    CampaignService-->>User: Campaign created, SMS sending in progress (async)
 
     Note over BackgroundJobService: Background job running asynchronously
 
     BackgroundJobService->>SMSService: Send SMS to each contact
-    SMSService->>CreditService: Deduct SMS count from user credit
-    CreditService-->>SMSService: Confirm deduction
-
     SMSService-->>BackgroundJobService: SMS sent to all contacts
     BackgroundJobService-->>CampaignService: Background job completed
+
+    %% Simulating bold "Tenant" as a note below the participants
+    Note right of User: **Tenant**
+    Note right of CampaignService: **Tenant**
