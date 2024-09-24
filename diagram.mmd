@@ -10,8 +10,10 @@ sequenceDiagram
     CampaignService->>ContactService: Fetch contacts by group
     ContactService-->>CampaignService: Return list of contacts
 
-    CampaignService->>CreditService: Deduct total SMS count from user credit
-    CreditService-->>CampaignService: Confirm deduction
+    rect rgba(173, 216, 230, 0.3)  %% Grouping the deduction process
+        CampaignService->>CreditService: Deduct total SMS count from user credit
+        CreditService-->>CampaignService: Confirm deduction
+    end
 
     CampaignService->>BackgroundJobService: Schedule background job to send SMS
     BackgroundJobService-->>CampaignService: Background job scheduled
@@ -20,8 +22,11 @@ sequenceDiagram
 
     Note over BackgroundJobService: Background job running asynchronously
 
-    BackgroundJobService->>SMSService: Send SMS to each contact
-    SMSService-->>BackgroundJobService: SMS sent to all contacts
+    rect rgba(240, 230, 140, 0.3)  %% Grouping the SMS sending process
+        BackgroundJobService->>SMSService: Send SMS to each contact
+        SMSService-->>BackgroundJobService: SMS sent to all contacts
+    end
+
     BackgroundJobService-->>CampaignService: Background job completed
 
     %% Simulating bold "Tenant" as a note below the participants
